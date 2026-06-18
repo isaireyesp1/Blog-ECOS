@@ -198,7 +198,7 @@ export default function Home() {
                     onClick={reset}
                     className="px-4 py-2 rounded-full bg-gray-200"
                   >
-                    Reiniciar
+                    Regresar
                   </button>
 
                   <span className="px-4 py-2">{page}</span>
