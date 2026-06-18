@@ -8,7 +8,7 @@ import CreatePost from "./pages/CreatePost";
 import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
 import CategoryPage from "./pages/CategoryPage";
-
+import Admin from "./pages/Admin";
 export default function App() {
   return (
     <BrowserRouter>
@@ -34,6 +34,11 @@ export default function App() {
             path="/categoria/:category"
             element={<CategoryPage />}
           />
+
+          <Route
+  path="/gestion-ecos-2026"
+  element={<Admin />}
+/>
         </Routes>
 
       </div>
