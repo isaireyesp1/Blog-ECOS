@@ -1,89 +1,88 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "../firebase";
 import PostCard from "../components/PostCard";
 import type { Post } from "../types/Post";
 
+const categories = [
+  "Amor",
+  "Historias",
+  "Humor",
+  "Escuela",
+  "Trabajo",
+  "Opiniones",
+  "Confesiones",
+];
+
 export default function Home() {
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: 1,
-      title: "Extraño a alguien que nunca fue mío",
-      content:
-        "A veces pienso en lo diferente que habría sido todo si hubiera dicho lo que sentía.",
-      category: "Amor",
-      likes: 245,
-      alias: "Anónimo #4832",
-    },
-    {
-      id: 2,
-      title: "Hoy aprobé mi examen",
-      content:
-        "Después de semanas estudiando por fin logré pasarlo. Estoy muy feliz.",
-      category: "Escuela",
-      likes: 187,
-      alias: "Anónimo #1921",
-    },
-    {
-      id: 3,
-      title: "Nunca es tarde para comenzar",
-      content:
-        "Hoy empecé a aprender programación. Espero algún día dedicarme a esto.",
-      category: "Historias",
-      likes: 321,
-      alias: "Anónimo #7568",
-    },
-  ]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  const likePost = (id: number) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === id
-          ? { ...post, likes: post.likes + 1 }
-          : post
-      )
+  useEffect(() => {
+    const q = query(
+      collection(db, "posts"),
+      orderBy("createdAt", "desc")
     );
-  };
 
-  const popularPosts = [...posts]
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Post[];
+
+      setPosts(data);
+    });
+
+    return () => unsub();
+  }, []);
+
+  const filtered = selectedCategory
+    ? posts.filter((p) => p.category === selectedCategory)
+    : posts;
+
+  const topPosts = [...posts]
     .sort((a, b) => b.likes - a.likes)
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+
       {/* HERO */}
-      <section className="max-w-6xl mx-auto px-6 pt-24 pb-20 text-center">
-        <span className="text-gray-500 text-sm tracking-[0.2em] uppercase">
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-16 text-center">
+        <span className="text-xs tracking-[0.3em] uppercase text-gray-500">
           Comunidad anónima
         </span>
 
-        <h1 className="text-6xl md:text-7xl font-semibold text-[#1d1d1f] mt-6 leading-tight">
-          Comparte tus ideas.
+        <h1 className="text-5xl md:text-7xl font-semibold mt-6 leading-tight">
+          Expresa lo que piensas,
           <br />
-          Sin mostrar quién eres.
+          sin que nadie te juzgue.
         </h1>
 
-        <p className="text-xl text-[#6e6e73] mt-8 max-w-3xl mx-auto leading-relaxed">
-          Un espacio donde cualquier persona puede publicar
-          pensamientos, historias, confesiones y opiniones
-          libremente, sin necesidad de registrarse.
+        <p className="text-gray-500 mt-6 max-w-2xl mx-auto text-lg">
+          ECOS es un espacio minimalista donde puedes publicar
+          pensamientos, historias y confesiones de forma completamente anónima.
         </p>
 
         <Link
           to="/crear"
           className="
             inline-flex
-            items-center
-            gap-2
             mt-10
-            bg-black
-            text-white
             px-8
             py-4
             rounded-full
+            bg-black
+            text-white
             text-sm
             font-medium
-            hover:opacity-90
+            hover:scale-105
             transition
           "
         >
@@ -91,65 +90,60 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* ESTADÍSTICAS */}
-      <section className="max-w-6xl mx-auto px-6 mb-20">
+      {/* STATS */}
+      <section className="max-w-6xl mx-auto px-6 mb-16">
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-[32px] p-8 border border-gray-200">
-            <h3 className="text-4xl font-semibold text-[#1d1d1f]">
+
+          <div className="bg-white rounded-3xl p-8 border hover:shadow-sm transition">
+            <p className="text-gray-500 text-sm">Publicaciones</p>
+            <h2 className="text-4xl font-semibold mt-2">
               {posts.length}
-            </h3>
-
-            <p className="text-[#6e6e73] mt-2">
-              Publicaciones
-            </p>
+            </h2>
           </div>
 
-          <div className="bg-white rounded-[32px] p-8 border border-gray-200">
-            <h3 className="text-4xl font-semibold text-[#1d1d1f]">
-              {posts.reduce(
-                (total, post) => total + post.likes,
-                0
-              )}
-            </h3>
-
-            <p className="text-[#6e6e73] mt-2">
-              Reacciones
-            </p>
+          <div className="bg-white rounded-3xl p-8 border hover:shadow-sm transition">
+            <p className="text-gray-500 text-sm">Reacciones</p>
+            <h2 className="text-4xl font-semibold mt-2">
+              {posts.reduce((t, p) => t + p.likes, 0)}
+            </h2>
           </div>
 
-          <div className="bg-white rounded-[32px] p-8 border border-gray-200">
-            <h3 className="text-4xl font-semibold text-[#1d1d1f]">
+          <div className="bg-white rounded-3xl p-8 border hover:shadow-sm transition">
+            <p className="text-gray-500 text-sm">Anonimato</p>
+            <h2 className="text-4xl font-semibold mt-2">
               100%
-            </h3>
-
-            <p className="text-[#6e6e73] mt-2">
-              Anónimo
-            </p>
+            </h2>
           </div>
+
         </div>
       </section>
 
-      {/* CONTENIDO */}
+      {/* CONTENT */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* PUBLICACIONES */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-4xl font-semibold text-[#1d1d1f]">
-                Recientes
-              </h2>
+        <div className="grid lg:grid-cols-3 gap-10">
 
-              <span className="text-[#6e6e73]">
-                {posts.length} publicaciones
-              </span>
+          {/* FEED */}
+          <div className="lg:col-span-2">
+
+            {/* HEADER */}
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <h2 className="text-3xl font-semibold">
+                  {selectedCategory || "Recientes"}
+                </h2>
+                <p className="text-gray-500 text-sm mt-1">
+                  {filtered.length} publicaciones
+                </p>
+              </div>
             </div>
 
+            {/* POSTS */}
             <div className="space-y-6">
-              {posts.map((post) => (
+              {filtered.map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}
-                  onLike={likePost}
+                  onLike={() => {}}
                 />
               ))}
             </div>
@@ -157,75 +151,72 @@ export default function Home() {
 
           {/* SIDEBAR */}
           <aside className="space-y-6">
-            <div className="bg-white rounded-[32px] border border-gray-200 p-8">
-              <h3 className="text-2xl font-semibold text-[#1d1d1f] mb-6">
-                🔥 Populares
+
+            {/* POPULAR */}
+            <div className="bg-white rounded-3xl p-6 border">
+              <h3 className="text-lg font-semibold mb-4">
+                🔥 Tendencia
               </h3>
 
-              <div className="space-y-5">
-                {popularPosts.map((post) => (
+              <div className="space-y-4">
+                {topPosts.map((post) => (
                   <div
                     key={post.id}
-                    className="pb-5 border-b border-gray-100 last:border-none"
+                    className="border-b pb-3 last:border-none"
                   >
-                    <h4 className="font-medium text-[#1d1d1f]">
+                    <p className="font-medium text-sm">
                       {post.title}
-                    </h4>
-
-                    <p className="text-sm text-[#6e6e73] mt-2">
-                      ❤️ {post.likes}
                     </p>
+                    <span className="text-xs text-gray-500">
+                      ❤️ {post.likes}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-[32px] border border-gray-200 p-8">
-              <h3 className="text-2xl font-semibold text-[#1d1d1f] mb-6">
+            {/* CATEGORIES */}
+            <div className="bg-white rounded-3xl p-6 border">
+              <h3 className="text-lg font-semibold mb-4">
                 🏷️ Categorías
               </h3>
 
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Amor",
-                  "Historias",
-                  "Humor",
-                  "Escuela",
-                  "Trabajo",
-                  "Opiniones",
-                  "Confesiones",
-                ].map((category) => (
-                  <span
-                    key={category}
-                    className="
-                      px-4
-                      py-2
-                      rounded-full
-                      bg-[#f5f5f7]
-                      text-sm
-                      text-[#1d1d1f]
-                    "
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedCategory("")}
+                  className="px-3 py-1 text-sm rounded-full bg-gray-100 hover:bg-gray-200"
+                >
+                  Todas
+                </button>
+
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() =>
+                      setSelectedCategory(cat)
+                    }
+                    className={`px-3 py-1 text-sm rounded-full transition ${
+                      selectedCategory === cat
+                        ? "bg-black text-white"
+                        : "bg-gray-100 hover:bg-gray-200"
+                    }`}
                   >
-                    {category}
-                  </span>
+                    {cat}
+                  </button>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-[32px] border border-gray-200 p-8">
-              <h3 className="text-2xl font-semibold text-[#1d1d1f]">
-                ✨ Frase del día
-              </h3>
-
-              <p className="text-[#6e6e73] mt-4 leading-relaxed">
-                “Tus palabras tienen valor, incluso cuando nadie
-                sabe quién las escribió.”
+            {/* QUOTE */}
+            <div className="bg-black text-white rounded-3xl p-6">
+              <p className="text-sm opacity-80">
+                “A veces lo que no dices pesa más que lo que publicas.”
               </p>
             </div>
+
           </aside>
         </div>
       </section>
     </div>
   );
 }
-
