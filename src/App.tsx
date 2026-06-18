@@ -12,32 +12,31 @@ import CategoryPage from "./pages/CategoryPage";
 export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      <div className="min-h-screen bg-[#f5f5f7]">
+        
+        {/* NAVBAR GLOBAL */}
+        <Navbar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
+        {/* ROUTES */}
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-        <Route
-          path="/popular"
-          element={<Popular />}
-        />
+          <Route path="/popular" element={<Popular />} />
 
-        <Route
-          path="/crear"
-          element={<CreatePost />}
-        />
+          <Route path="/crear" element={<CreatePost />} />
 
-        <Route
-          path="/publicaciones"
-          element={<Posts />}
-        />
+          <Route path="/publicaciones" element={<Posts />} />
 
-        <Route path="/post/:id" element={<PostDetail />} />
+          <Route path="/post/:id" element={<PostDetail />} />
 
+          {/* CATEGORÍAS */}
+          <Route
+            path="/categoria/:category"
+            element={<CategoryPage />}
+          />
+        </Routes>
 
-        {/* 🔥 CATEGORÍAS */}
-        <Route path="/categoria/:category" element={<CategoryPage />} />
-      </Routes>
+      </div>
     </BrowserRouter>
   );
 }
