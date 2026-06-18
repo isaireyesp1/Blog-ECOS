@@ -9,6 +9,8 @@ import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
 import CategoryPage from "./pages/CategoryPage";
 import Admin from "./pages/Admin";
+import Login from "./pages/Login";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -28,6 +30,8 @@ export default function App() {
           <Route path="/publicaciones" element={<Posts />} />
 
           <Route path="/post/:id" element={<PostDetail />} />
+
+          <Route path="/login" element={<Login />} />
 
           {/* CATEGORÍAS */}
           <Route
