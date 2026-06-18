@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import PostCard from "../components/PostCard";
 import type { Post } from "../types/Post";
@@ -9,33 +14,26 @@ export default function Posts() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadPosts();
-  }, []);
+    const q = query(
+      collection(db, "posts"),
+      orderBy("createdAt", "desc")
+    );
 
-  const loadPosts = async () => {
-    try {
-      const q = query(
-        collection(db, "posts"),
-        orderBy("createdAt", "desc")
-      );
-
-      const snapshot = await getDocs(q);
-
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Post[];
 
       setPosts(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const likePost = () => {
-    // luego conectamos los likes a Firebase
+    // ya no necesitas esto aquí si el like está en PostCard
   };
 
   if (loading) {
@@ -55,11 +53,7 @@ export default function Posts() {
 
         <div className="space-y-6">
           {posts.map((post) => (
-            <PostCard
-              key={String(post.id)}
-              post={post}
-              onLike={likePost}
-            />
+            <PostCard key={post.id} post={post} />
           ))}
         </div>
       </div>

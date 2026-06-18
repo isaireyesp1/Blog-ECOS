@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Popular from "./pages/Popular";
 import CreatePost from "./pages/CreatePost";
 import Posts from "./pages/Posts";
+import PostDetail from "./pages/PostDetail";
 
 export default function App() {
   return (
@@ -29,6 +30,8 @@ export default function App() {
           path="/publicaciones"
           element={<Posts />}
         />
+
+        <Route path="/post/:id" element={<PostDetail />} />
       </Routes>
     </BrowserRouter>
   );
