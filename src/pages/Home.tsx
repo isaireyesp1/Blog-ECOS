@@ -4,7 +4,11 @@ import {
   collection,
   query,
   orderBy,
-  onSnapshot,
+  getDocs,
+  limit,
+  startAfter,
+  DocumentData,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import PostCard from "../components/PostCard";
@@ -22,32 +26,69 @@ const categories = [
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [lastDoc, setLastDoc] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
 
-  useEffect(() => {
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  // 🔥 CARGAR PRIMERA PÁGINA
+  const loadPosts = async () => {
+    setLoading(true);
+
     const q = query(
       collection(db, "posts"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
+      limit(10)
     );
 
-    const unsub = onSnapshot(q, (snap) => {
-      const data: Post[] = snap.docs.map((doc) => {
-        const d = doc.data();
+    const snap = await getDocs(q);
 
-        return {
-          id: doc.id,
-          title: d.title,
-          content: d.content,
-          category: d.category,
-          likes: d.likes,
-          alias: d.alias,
-          createdAt: d.createdAt,
-        };
-      });
+    const data: Post[] = snap.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Post),
+    }));
 
-      setPosts(data);
-    });
+    setPosts(data);
+    setLastDoc(snap.docs[snap.docs.length - 1] || null);
+    setLoading(false);
+  };
 
-    return () => unsub();
+  // 🔥 SIGUIENTE PÁGINA
+  const nextPage = async () => {
+    if (!lastDoc) return;
+
+    setLoading(true);
+
+    const q = query(
+      collection(db, "posts"),
+      orderBy("createdAt", "desc"),
+      startAfter(lastDoc),
+      limit(10)
+    );
+
+    const snap = await getDocs(q);
+
+    const data: Post[] = snap.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Post),
+    }));
+
+    setPosts(data);
+    setLastDoc(snap.docs[snap.docs.length - 1] || null);
+    setPage((p) => p + 1);
+    setLoading(false);
+  };
+
+  // 🔙 PÁGINA ANTERIOR (simple reset)
+  const prevPage = () => {
+    if (page === 1) return;
+    loadPosts();
+    setPage(1);
+  };
+
+  useEffect(() => {
+    loadPosts();
   }, []);
 
   const topPosts = [...posts]
@@ -121,19 +162,48 @@ export default function Home() {
               </h2>
 
               <p className="text-gray-500 text-sm mt-1">
-                {posts.length} publicaciones
+                Página {page}
               </p>
             </div>
 
-            <div className="space-y-6">
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={() => {}}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <p className="text-gray-500">Cargando...</p>
+            ) : (
+              <>
+                <div className="space-y-6">
+                  {posts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onLike={() => {}}
+                    />
+                  ))}
+                </div>
+
+                {/* PAGINACIÓN */}
+                <div className="flex justify-center gap-4 mt-10">
+                  <button
+                    onClick={prevPage}
+                    disabled={page === 1}
+                    className="px-4 py-2 rounded-full bg-gray-200 disabled:opacity-50"
+                  >
+                    Anterior
+                  </button>
+
+                  <span className="px-4 py-2">
+                    {page}
+                  </span>
+
+                  <button
+                    onClick={nextPage}
+                    disabled={posts.length < 10}
+                    className="px-4 py-2 rounded-full bg-black text-white disabled:opacity-50"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* SIDEBAR */}
@@ -147,10 +217,7 @@ export default function Home() {
 
               <div className="space-y-4">
                 {topPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="pb-3 border-b last:border-none"
-                  >
+                  <div key={post.id} className="pb-3 border-b last:border-none">
                     <p className="font-medium text-sm line-clamp-1">
                       {post.title}
                     </p>
@@ -162,7 +229,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* CATEGORIES (NAVEGACIÓN REAL) */}
+            {/* CATEGORIES */}
             <div className="bg-white rounded-3xl p-6 border">
               <h3 className="text-lg font-semibold mb-4">
                 🏷️ Categorías
