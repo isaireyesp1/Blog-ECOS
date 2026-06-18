@@ -7,9 +7,8 @@ import {
   getDocs,
   limit,
   startAfter,
-  DocumentData,
-  QueryDocumentSnapshot,
 } from "firebase/firestore";
+
 import { db } from "../firebase";
 import PostCard from "../components/PostCard";
 import type { Post } from "../types/Post";
@@ -26,13 +25,11 @@ const categories = [
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [lastDoc, setLastDoc] =
-    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-
+  const [lastDoc, setLastDoc] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // 🔥 CARGAR PRIMERA PÁGINA
+  // 🔥 Cargar primera página
   const loadPosts = async () => {
     setLoading(true);
 
@@ -51,10 +48,11 @@ export default function Home() {
 
     setPosts(data);
     setLastDoc(snap.docs[snap.docs.length - 1] || null);
+    setPage(1);
     setLoading(false);
   };
 
-  // 🔥 SIGUIENTE PÁGINA
+  // 🔥 Siguiente página (ACUMULA POSTS)
   const nextPage = async () => {
     if (!lastDoc) return;
 
@@ -74,17 +72,16 @@ export default function Home() {
       ...(doc.data() as Post),
     }));
 
-    setPosts(data);
+    setPosts((prev) => [...prev, ...data]); // 🔥 FIX IMPORTANTE
     setLastDoc(snap.docs[snap.docs.length - 1] || null);
     setPage((p) => p + 1);
+
     setLoading(false);
   };
 
-  // 🔙 PÁGINA ANTERIOR (simple reset)
+  // 🔙 Reset
   const prevPage = () => {
-    if (page === 1) return;
     loadPosts();
-    setPage(1);
   };
 
   useEffect(() => {
@@ -166,7 +163,7 @@ export default function Home() {
               </p>
             </div>
 
-            {loading ? (
+            {loading && page === 1 ? (
               <p className="text-gray-500">Cargando...</p>
             ) : (
               <>
@@ -184,10 +181,9 @@ export default function Home() {
                 <div className="flex justify-center gap-4 mt-10">
                   <button
                     onClick={prevPage}
-                    disabled={page === 1}
-                    className="px-4 py-2 rounded-full bg-gray-200 disabled:opacity-50"
+                    className="px-4 py-2 rounded-full bg-gray-200"
                   >
-                    Anterior
+                    Reiniciar
                   </button>
 
                   <span className="px-4 py-2">
@@ -196,7 +192,7 @@ export default function Home() {
 
                   <button
                     onClick={nextPage}
-                    disabled={posts.length < 10}
+                    disabled={loading}
                     className="px-4 py-2 rounded-full bg-black text-white disabled:opacity-50"
                   >
                     Siguiente
@@ -239,7 +235,7 @@ export default function Home() {
                 {categories.map((cat) => (
                   <Link
                     key={cat}
-                    to={`/categoria/${cat}`}
+                    to={`/categoria/${cat.toLowerCase()}`}
                     className="px-3 py-1 text-sm rounded-full bg-gray-100 hover:bg-black hover:text-white transition"
                   >
                     {cat}
