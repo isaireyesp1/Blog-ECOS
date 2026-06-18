@@ -3,7 +3,11 @@ import {
   collection,
   query,
   orderBy,
-  onSnapshot,
+  getDocs,
+  limit,
+  startAfter,
+  DocumentData,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import PostCard from "../components/PostCard";
@@ -11,36 +15,70 @@ import type { Post } from "../types/Post";
 
 export default function Popular() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [lastDoc, setLastDoc] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
 
-  useEffect(() => {
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  // 🔥 PRIMERA PÁGINA (más likes)
+  const loadPosts = async () => {
+    setLoading(true);
+
     const q = query(
       collection(db, "posts"),
-      orderBy("likes", "desc")
+      orderBy("likes", "desc"),
+      limit(10)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Post[];
+    const snap = await getDocs(q);
 
-      setPosts(data);
-      setLoading(false);
-    });
+    const data: Post[] = snap.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Post),
+    }));
 
-    return () => unsubscribe();
+    setPosts(data);
+    setLastDoc(snap.docs[snap.docs.length - 1] || null);
+    setLoading(false);
+  };
+
+  // 🔥 SIGUIENTE PÁGINA
+  const nextPage = async () => {
+    if (!lastDoc) return;
+
+    setLoading(true);
+
+    const q = query(
+      collection(db, "posts"),
+      orderBy("likes", "desc"),
+      startAfter(lastDoc),
+      limit(10)
+    );
+
+    const snap = await getDocs(q);
+
+    const data: Post[] = snap.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Post),
+    }));
+
+    setPosts(data);
+    setLastDoc(snap.docs[snap.docs.length - 1] || null);
+    setPage((p) => p + 1);
+    setLoading(false);
+  };
+
+  // 🔙 RESET SIMPLE
+  const prevPage = () => {
+    if (page === 1) return;
+    loadPosts();
+    setPage(1);
+  };
+
+  useEffect(() => {
+    loadPosts();
   }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 animate-pulse">
-          Cargando populares...
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
@@ -57,21 +95,50 @@ export default function Popular() {
           </p>
         </div>
 
-        {/* LISTA */}
-        <div className="space-y-6">
-          {posts.length === 0 ? (
-            <p className="text-gray-500">
-              No hay publicaciones aún.
-            </p>
-          ) : (
-            posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-              />
-            ))
-          )}
-        </div>
+        {/* CONTENT */}
+        {loading ? (
+          <p className="text-gray-500">Cargando...</p>
+        ) : (
+          <>
+            <div className="space-y-6">
+              {posts.length === 0 ? (
+                <p className="text-gray-500">
+                  No hay publicaciones aún.
+                </p>
+              ) : (
+                posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                  />
+                ))
+              )}
+            </div>
+
+            {/* PAGINACIÓN */}
+            <div className="flex justify-center gap-4 mt-10">
+              <button
+                onClick={prevPage}
+                disabled={page === 1}
+                className="px-4 py-2 rounded-full bg-gray-200 disabled:opacity-50"
+              >
+                Anterior
+              </button>
+
+              <span className="px-4 py-2">
+                Página {page}
+              </span>
+
+              <button
+                onClick={nextPage}
+                disabled={posts.length < 10}
+                className="px-4 py-2 rounded-full bg-black text-white disabled:opacity-50"
+              >
+                Siguiente
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
