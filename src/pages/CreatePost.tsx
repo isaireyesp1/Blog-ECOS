@@ -22,14 +22,14 @@ export default function CreatePost() {
     try {
       setLoading(true);
 
-      await addDoc(collection(db, "posts"), {
-        title,
-        content,
-        category,
-        likes: 0,
-        alias: `Anónimo #${Math.floor(1000 + Math.random() * 9000)}`,
-        createdAt: serverTimestamp(),
-      });
+    await addDoc(collection(db, "posts"), {
+  title,
+  content,
+  category, // 👈 ASÍ SE QUEDA "Humor"
+  likes: 0,
+  alias: `Anónimo #${Math.floor(1000 + Math.random() * 9000)}`,
+  createdAt: serverTimestamp(),
+});
 
       setTitle("");
       setContent("");

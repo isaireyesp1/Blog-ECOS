@@ -6,35 +6,56 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
+
 import { db } from "../firebase";
 import PostCard from "../components/PostCard";
 import type { Post } from "../types/Post";
 
 export default function CategoryPage() {
   const { category } = useParams();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+
+  const POSTS_PER_PAGE = 10;
 
   useEffect(() => {
     if (!category) return;
 
+    setLoading(true);
+
+    const formattedCategory =
+      category.charAt(0).toUpperCase() + category.slice(1);
+
     const q = query(
       collection(db, "posts"),
-      where("category", "==", category)
+      where("category", "==", formattedCategory)
     );
 
     const unsub = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((doc) => ({
+      const data: Post[] = snap.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
-      })) as Post[];
+        ...(doc.data() as Post),
+      }));
 
       setPosts(data);
+      setPage(1);
       setLoading(false);
     });
 
     return () => unsub();
   }, [category]);
+
+  const totalPages = Math.ceil(
+    posts.length / POSTS_PER_PAGE
+  );
+
+  const currentPosts = posts.slice(
+    (page - 1) * POSTS_PER_PAGE,
+    page * POSTS_PER_PAGE
+  );
 
   if (loading) {
     return (
@@ -70,16 +91,47 @@ export default function CategoryPage() {
 
         {/* POSTS */}
         <div className="space-y-6">
-          {posts.length === 0 ? (
+          {currentPosts.length === 0 ? (
             <p className="text-gray-500">
               No hay publicaciones en esta categoría.
             </p>
           ) : (
-            posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+            currentPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onLike={() => {}}
+              />
             ))
           )}
         </div>
+
+        {/* PAGINACIÓN */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-12">
+
+            <button
+              onClick={() => setPage((p) => p - 1)}
+              disabled={page === 1}
+              className="px-5 py-2 rounded-full bg-gray-200 disabled:opacity-50"
+            >
+              ← Anterior
+            </button>
+
+            <span className="font-medium">
+              Página {page} de {totalPages}
+            </span>
+
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page === totalPages}
+              className="px-5 py-2 rounded-full bg-black text-white disabled:opacity-50"
+            >
+              Siguiente →
+            </button>
+
+          </div>
+        )}
 
       </div>
     </div>
