@@ -5,7 +5,6 @@ import {
   query,
   orderBy,
   onSnapshot,
-
 } from "firebase/firestore";
 import { db } from "../firebase";
 import PostCard from "../components/PostCard";
@@ -23,7 +22,6 @@ const categories = [
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   useEffect(() => {
     const q = query(
@@ -33,7 +31,7 @@ export default function Home() {
 
     const unsub = onSnapshot(q, (snap) => {
       const data: Post[] = snap.docs.map((doc) => {
-  const d = doc.data();
+        const d = doc.data();
 
         return {
           id: doc.id,
@@ -52,13 +50,7 @@ export default function Home() {
     return () => unsub();
   }, []);
 
-  const filteredPosts =
-    selectedCategory.length > 0
-      ? posts.filter((p) => p.category === selectedCategory)
-      : posts;
-
-  const topPosts = posts
-    .slice()
+  const topPosts = [...posts]
     .sort((a, b) => b.likes - a.likes)
     .slice(0, 5);
 
@@ -125,16 +117,16 @@ export default function Home() {
 
             <div className="mb-8">
               <h2 className="text-3xl font-semibold">
-                {selectedCategory || "Recientes"}
+                Recientes
               </h2>
 
               <p className="text-gray-500 text-sm mt-1">
-                {filteredPosts.length} publicaciones
+                {posts.length} publicaciones
               </p>
             </div>
 
             <div className="space-y-6">
-              {filteredPosts.map((post) => (
+              {posts.map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}
@@ -155,7 +147,10 @@ export default function Home() {
 
               <div className="space-y-4">
                 {topPosts.map((post) => (
-                  <div key={post.id} className="pb-3 border-b last:border-none">
+                  <div
+                    key={post.id}
+                    className="pb-3 border-b last:border-none"
+                  >
                     <p className="font-medium text-sm line-clamp-1">
                       {post.title}
                     </p>
@@ -167,36 +162,21 @@ export default function Home() {
               </div>
             </div>
 
-            {/* CATEGORIES */}
+            {/* CATEGORIES (NAVEGACIÓN REAL) */}
             <div className="bg-white rounded-3xl p-6 border">
               <h3 className="text-lg font-semibold mb-4">
                 🏷️ Categorías
               </h3>
 
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedCategory("")}
-                  className={`px-3 py-1 text-sm rounded-full transition ${
-                    selectedCategory === ""
-                      ? "bg-black text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
-                  }`}
-                >
-                  Todas
-                </button>
-
                 {categories.map((cat) => (
-                  <button
+                  <Link
                     key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1 text-sm rounded-full transition ${
-                      selectedCategory === cat
-                        ? "bg-black text-white"
-                        : "bg-gray-100 hover:bg-gray-200"
-                    }`}
+                    to={`/categoria/${cat}`}
+                    className="px-3 py-1 text-sm rounded-full bg-gray-100 hover:bg-black hover:text-white transition"
                   >
                     {cat}
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
