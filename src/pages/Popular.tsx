@@ -3,26 +3,24 @@ import {
   collection,
   query,
   orderBy,
-  getDocs,
+  onSnapshot,
   limit,
   startAfter,
-  DocumentData,
-  QueryDocumentSnapshot,
+  getDocs,
 } from "firebase/firestore";
+
 import { db } from "../firebase";
 import PostCard from "../components/PostCard";
 import type { Post } from "../types/Post";
 
 export default function Popular() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [lastDoc, setLastDoc] =
-    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-
+  const [lastDoc, setLastDoc] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // 🔥 PRIMERA PÁGINA (más likes)
-  const loadPosts = async () => {
+  // 🔥 PRIMERA CARGA + TIEMPO REAL
+  const loadPosts = () => {
     setLoading(true);
 
     const q = query(
@@ -31,19 +29,21 @@ export default function Popular() {
       limit(10)
     );
 
-    const snap = await getDocs(q);
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data: Post[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Post),
+      }));
 
-    const data: Post[] = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Post),
-    }));
+      setPosts(data);
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+      setLoading(false);
+    });
 
-    setPosts(data);
-    setLastDoc(snap.docs[snap.docs.length - 1] || null);
-    setLoading(false);
+    return unsub;
   };
 
-  // 🔥 SIGUIENTE PÁGINA
+  // 🔥 SIGUIENTE PÁGINA (NO realtime para evitar bugs)
   const nextPage = async () => {
     if (!lastDoc) return;
 
@@ -66,31 +66,33 @@ export default function Popular() {
     setPosts(data);
     setLastDoc(snap.docs[snap.docs.length - 1] || null);
     setPage((p) => p + 1);
+
     setLoading(false);
   };
 
-  // 🔙 RESET SIMPLE
+  // 🔙 ANTERIOR (regresa a primera página)
   const prevPage = () => {
     if (page === 1) return;
-    loadPosts();
     setPage(1);
+    loadPosts();
   };
 
   useEffect(() => {
-    loadPosts();
+    const unsub = loadPosts();
+    return () => unsub && unsub();
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
-      <div className="max-w-6xl mx-auto px-6 py-16">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
 
-        {/* HEADER */}
+      {/* HEADER */}
+      <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="mb-12">
-          <h1 className="text-5xl font-bold text-[#1d1d1f]">
+          <h1 className="text-5xl font-bold">
             🔥 Populares
           </h1>
 
-          <p className="mt-4 text-[#6e6e73] text-lg">
+          <p className="mt-4 text-gray-500 text-lg">
             Publicaciones con más reacciones de la comunidad.
           </p>
         </div>
@@ -110,6 +112,7 @@ export default function Popular() {
                   <PostCard
                     key={post.id}
                     post={post}
+                    onLike={() => {}}
                   />
                 ))
               )}
