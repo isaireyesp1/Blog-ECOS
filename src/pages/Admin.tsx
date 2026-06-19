@@ -25,6 +25,9 @@ import type { Post } from "../types/Post";
 export default function Admin() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+
+  const POSTS_PER_PAGE = 10;
   const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
@@ -100,6 +103,19 @@ export default function Admin() {
         .includes(search.toLowerCase())
   );
 
+
+
+
+  const totalPages = Math.ceil(
+  filteredPosts.length / POSTS_PER_PAGE
+);
+
+const startIndex = (page - 1) * POSTS_PER_PAGE;
+
+const paginatedPosts = filteredPosts.slice(
+  startIndex,
+  startIndex + POSTS_PER_PAGE
+);
   // 🔥 CARGANDO AUTH
   if (loadingAuth) {
     return (
@@ -157,147 +173,263 @@ export default function Admin() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#f5f5f7]">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+return (
+  <div className="min-h-screen bg-[#f5f5f7]">
+    <div className="max-w-7xl mx-auto px-6 py-12">
 
-        <div className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-5xl font-bold">
-              🛡️ Panel de Administración
-            </h1>
+      {/* HEADER */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-12">
 
-            <p className="text-gray-500 mt-3">
-              Gestiona todas las publicaciones.
-            </p>
-          </div>
+        <div>
+          <p className="uppercase tracking-[0.25em] text-xs text-gray-400 mb-3">
+            ECOS ADMIN
+          </p>
 
-          <button
-            onClick={logout}
-            className="bg-black text-white px-5 py-3 rounded-xl"
-          >
-            Cerrar sesión
-          </button>
+          <h1 className="text-6xl font-semibold tracking-tight text-[#1d1d1f]">
+            Panel de control
+          </h1>
+
+          <p className="text-gray-500 mt-4 text-lg">
+            Gestiona publicaciones, monitorea actividad y modera contenido.
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
+        <button
+          onClick={logout}
+          className="
+            px-6
+            py-3
+            rounded-full
+            bg-black
+            text-white
+            text-sm
+            font-medium
+            hover:scale-105
+            transition
+          "
+        >
+          Cerrar sesión
+        </button>
 
-          <div className="bg-white rounded-3xl border p-6">
-            <p className="text-gray-500">
-              Publicaciones
-            </p>
+      </div>
 
-            <h2 className="text-4xl font-bold mt-2">
-              {posts.length}
-            </h2>
-          </div>
+      {/* STATS */}
+      <div className="grid md:grid-cols-3 gap-6 mb-12">
 
-          <div className="bg-white rounded-3xl border p-6">
-            <p className="text-gray-500">
-              Likes Totales
-            </p>
+        <div
+          className="
+            bg-white/80
+            backdrop-blur-xl
+            rounded-[32px]
+            p-8
+            shadow-sm
+          "
+        >
+          <p className="text-gray-500 text-sm">
+            Publicaciones
+          </p>
 
-            <h2 className="text-4xl font-bold mt-2">
-              {posts.reduce(
-                (acc, p) => acc + (p.likes || 0),
-                0
-              )}
-            </h2>
-          </div>
-
-          <div className="bg-white rounded-3xl border p-6">
-            <p className="text-gray-500">
-              Resultados
-            </p>
-
-            <h2 className="text-4xl font-bold mt-2">
-              {filteredPosts.length}
-            </h2>
-          </div>
-
+          <h2 className="text-5xl font-semibold mt-3">
+            {posts.length}
+          </h2>
         </div>
 
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Buscar publicación..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-            className="
-              w-full
-              bg-white
-              border
-              rounded-2xl
-              px-5
-              py-4
-              outline-none
-            "
-          />
+        <div
+          className="
+            bg-white/80
+            backdrop-blur-xl
+            rounded-[32px]
+            p-8
+            shadow-sm
+          "
+        >
+          <p className="text-gray-500 text-sm">
+            Likes Totales
+          </p>
+
+          <h2 className="text-5xl font-semibold mt-3">
+            {posts.reduce(
+              (acc, p) => acc + (p.likes || 0),
+              0
+            )}
+          </h2>
         </div>
 
-        <div className="space-y-4">
+        <div
+          className="
+            bg-white/80
+            backdrop-blur-xl
+            rounded-[32px]
+            p-8
+            shadow-sm
+          "
+        >
+          <p className="text-gray-500 text-sm">
+            Resultados
+          </p>
 
-          {filteredPosts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-white border rounded-3xl p-6"
-            >
-              <div className="flex flex-col md:flex-row justify-between gap-6">
-
-                <div className="flex-1">
-
-                  <div className="flex gap-3 items-center mb-3">
-                    <span className="px-3 py-1 rounded-full bg-gray-100 text-sm">
-                      {post.category}
-                    </span>
-
-                    <span className="text-sm text-gray-500">
-                      ❤️ {post.likes || 0}
-                    </span>
-                  </div>
-
-                  <h2 className="text-2xl font-semibold">
-                    {post.title}
-                  </h2>
-
-                  <p className="text-gray-500 mt-2">
-                    {post.alias}
-                  </p>
-
-                  <p className="mt-4 text-gray-700">
-                    {post.content}
-                  </p>
-
-                </div>
-
-                <button
-                  onClick={() =>
-                    deletePost(
-                      String(post.id),
-                      post.title
-                    )
-                  }
-                  className="
-                    bg-red-500
-                    hover:bg-red-600
-                    text-white
-                    px-6
-                    py-3
-                    rounded-xl
-                  "
-                >
-                  🗑 Eliminar
-                </button>
-
-              </div>
-            </div>
-          ))}
-
+          <h2 className="text-5xl font-semibold mt-3">
+            {filteredPosts.length}
+          </h2>
         </div>
 
       </div>
+
+      {/* SEARCH */}
+      <div className="mb-10">
+
+        <input
+          type="text"
+          placeholder="Buscar publicación..."
+          value={search}
+          onChange={(e) => {
+  setSearch(e.target.value);
+  setPage(1);
+}}
+          className="
+            w-full
+            bg-white
+            rounded-full
+            px-7
+            py-5
+            text-lg
+            shadow-sm
+            outline-none
+          "
+        />
+
+      </div>
+
+      {/* POSTS */}
+      <div className="space-y-4">
+
+      {paginatedPosts.map((post) => (
+          <div
+            key={post.id}
+            className="
+              bg-white/90
+              backdrop-blur-xl
+              rounded-[28px]
+              p-6
+              shadow-sm
+              hover:shadow-lg
+              transition-all
+            "
+          >
+            <div className="flex items-start justify-between gap-6">
+
+              <div className="flex-1">
+
+                <div className="flex items-center gap-3 mb-3">
+
+                  <span
+                    className="
+                      px-3
+                      py-1
+                      rounded-full
+                      bg-gray-100
+                      text-xs
+                      font-medium
+                    "
+                  >
+                    {post.category}
+                  </span>
+
+                  <span className="text-sm text-gray-500">
+                    ❤️ {post.likes || 0}
+                  </span>
+
+                </div>
+
+                <h2 className="text-2xl font-semibold text-[#1d1d1f]">
+                  {post.title}
+                </h2>
+
+                <p className="text-sm text-gray-400 mt-1">
+                  {post.alias}
+                </p>
+
+                <p className="mt-4 text-gray-600 line-clamp-2">
+                  {post.content}
+                </p>
+
+              </div>
+
+              <button
+                onClick={() =>
+                  deletePost(
+                    String(post.id),
+                    post.title
+                  )
+                }
+                className="
+                  shrink-0
+                  w-10
+                  h-10
+                  rounded-full
+                  bg-red-50
+                  hover:bg-red-500
+                  hover:text-white
+                  text-red-500
+                  flex
+                  items-center
+                  justify-center
+                  transition
+                "
+              >
+                🗑️
+              </button>
+
+            </div>
+          </div>
+        ))}
+
+      </div>
+
+
+
+<div className="flex items-center justify-center gap-4 mt-10">
+
+  <button
+    onClick={() => setPage((p) => p - 1)}
+    disabled={page === 1}
+    className="
+      px-5
+      py-2
+      rounded-full
+      bg-white
+      shadow-sm
+      disabled:opacity-40
+      disabled:cursor-not-allowed
+    "
+  >
+    ← Anterior
+  </button>
+
+  <div className="px-4 py-2 text-sm text-gray-500">
+    Página {page} de {Math.max(totalPages, 1)}
+  </div>
+
+  <button
+    onClick={() => setPage((p) => p + 1)}
+    disabled={page >= totalPages}
+    className="
+      px-5
+      py-2
+      rounded-full
+      bg-black
+      text-white
+      disabled:opacity-40
+      disabled:cursor-not-allowed
+    "
+  >
+    Siguiente →
+  </button>
+
+</div>
+
+
     </div>
-  );
+  </div>
+);
 }
