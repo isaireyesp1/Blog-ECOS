@@ -13,36 +13,28 @@ import Login from "./pages/Login";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Blog-ECOS">
       <div className="min-h-screen bg-[#f5f5f7]">
-        
-        {/* NAVBAR GLOBAL */}
+
         <Navbar />
 
-        {/* ROUTES */}
         <Routes>
           <Route path="/" element={<Home />} />
-
           <Route path="/popular" element={<Popular />} />
-
           <Route path="/crear" element={<CreatePost />} />
-
           <Route path="/publicaciones" element={<Posts />} />
-
           <Route path="/post/:id" element={<PostDetail />} />
-
           <Route path="/login" element={<Login />} />
 
-          {/* CATEGORÍAS */}
           <Route
             path="/categoria/:category"
             element={<CategoryPage />}
           />
 
           <Route
-  path="/gestion-ecos-2026"
-  element={<Admin />}
-/>
+            path="/gestion-ecos-2026"
+            element={<Admin />}
+          />
         </Routes>
 
       </div>
