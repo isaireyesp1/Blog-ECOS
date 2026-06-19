@@ -74,11 +74,19 @@ export default function Home() {
 
     const snap = await getDocs(q);
 
-    const data: Post[] = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Post),
-    }));
+    const data: Post[] = snap.docs.map((doc) => {
+  const d = doc.data() as any;
 
+  return {
+    id: doc.id,
+    title: d.title,
+    content: d.content,
+    category: d.category,
+    likes: d.likes,
+    alias: d.alias,
+    createdAt: d.createdAt,
+  };
+});
     setPosts(data);
     setLastDoc(snap.docs[snap.docs.length - 1] || null);
     setHasMore(snap.docs.length === 10);
@@ -104,11 +112,19 @@ export default function Home() {
 
     const snap = await getDocs(q);
 
-    const data: Post[] = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Post),
-    }));
+    const data: Post[] = snap.docs.map((doc) => {
+  const d = doc.data() as any;
 
+  return {
+    id: doc.id,
+    title: d.title,
+    content: d.content,
+    category: d.category,
+    likes: d.likes,
+    alias: d.alias,
+    createdAt: d.createdAt,
+  };
+});
     setPosts(data);
     setLastDoc(snap.docs[snap.docs.length - 1] || null);
     setHasMore(snap.docs.length === 10);
@@ -186,10 +202,9 @@ export default function Home() {
                 <div className="space-y-6">
                   {posts.map((post) => (
                     <PostCard
-                      key={post.id}
-                      post={post}
-                      onLike={() => {}}
-                    />
+  key={post.id}
+  post={post}
+/>
                   ))}
                 </div>
 
