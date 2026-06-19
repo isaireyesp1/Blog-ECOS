@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
+
 import { db } from "../firebase";
 import type { Post } from "../types/Post";
 
@@ -10,30 +16,58 @@ export default function PostDetail() {
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [liking, setLiking] = useState(false);
 
   useEffect(() => {
-    const loadPost = async () => {
-      if (!id) return;
+    if (!id) return;
 
-      try {
-        const ref = doc(db, "posts", id);
-        const snap = await getDoc(ref);
+    const ref = doc(db, "posts", id);
 
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
         if (snap.exists()) {
+          const data = snap.data();
+
           setPost({
             id: snap.id,
-            ...snap.data(),
+            title: data.title,
+            content: data.content,
+            category: data.category,
+            likes: data.likes || 0,
+            alias: data.alias,
+            createdAt: data.createdAt,
           } as Post);
+        } else {
+          setPost(null);
         }
-      } catch (error) {
+
+        setLoading(false);
+      },
+      (error) => {
         console.error(error);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    loadPost();
+    return () => unsub();
   }, [id]);
+
+  const handleLike = async () => {
+    if (!id || liking) return;
+
+    try {
+      setLiking(true);
+
+      await updateDoc(doc(db, "posts", id), {
+        likes: increment(1),
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLiking(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -68,7 +102,7 @@ export default function PostDetail() {
     <div className="min-h-screen bg-[#f5f5f7]">
       <div className="max-w-3xl mx-auto px-6 py-20">
 
-        {/* BACK BUTTON */}
+        {/* BOTÓN VOLVER */}
         <button
           onClick={() => navigate(-1)}
           className="mb-10 text-sm text-[#6e6e73] hover:text-black transition"
@@ -79,12 +113,12 @@ export default function PostDetail() {
         {/* CARD */}
         <div className="bg-white rounded-[32px] shadow-lg border border-gray-200 p-10">
 
-          {/* CATEGORY */}
+          {/* CATEGORÍA */}
           <span className="inline-block px-4 py-1 text-sm rounded-full bg-[#f5f5f7] text-[#1d1d1f]">
             {post.category}
           </span>
 
-          {/* TITLE */}
+          {/* TÍTULO */}
           <h1 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] mt-6 leading-tight">
             {post.title}
           </h1>
@@ -92,19 +126,23 @@ export default function PostDetail() {
           {/* META */}
           <div className="flex items-center justify-between mt-6 text-sm text-[#6e6e73]">
             <span>{post.alias}</span>
-            <span>❤️ {post.likes} likes</span>
+
+            <span className="font-medium">
+              ❤️ {post.likes} likes
+            </span>
           </div>
 
           {/* DIVIDER */}
           <div className="h-px bg-gray-200 my-8"></div>
 
-          {/* CONTENT */}
+          {/* CONTENIDO */}
           <div className="text-lg leading-relaxed text-[#1d1d1f] whitespace-pre-line">
             {post.content}
           </div>
 
           {/* FOOTER */}
           <div className="mt-10 flex justify-between items-center">
+
             <button
               onClick={() => navigate(-1)}
               className="text-sm text-[#6e6e73] hover:text-black transition"
@@ -112,11 +150,28 @@ export default function PostDetail() {
               ← Regresar
             </button>
 
-            <button className="px-6 py-3 rounded-full bg-black text-white text-sm hover:opacity-90 transition">
-              ❤️ Me gusta
+            <button
+              onClick={handleLike}
+              disabled={liking}
+              className="
+                px-6
+                py-3
+                rounded-full
+                bg-black
+                text-white
+                text-sm
+                hover:opacity-90
+                transition
+                disabled:opacity-60
+                disabled:cursor-not-allowed
+              "
+            >
+              ❤️ Me gusta ({post.likes})
             </button>
+
           </div>
         </div>
+
       </div>
     </div>
   );
