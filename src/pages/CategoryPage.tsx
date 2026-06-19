@@ -13,6 +13,21 @@ import type { Post } from "../types/Post";
 
 const POSTS_PER_PAGE = 10;
 
+/** 🔥 FIX: mapeo seguro para evitar errores TS */
+const mapPost = (doc: any): Post => {
+  const data = doc.data();
+
+  return {
+    id: doc.id,
+    title: data.title || "",
+    content: data.content || "",
+    category: data.category || "General",
+    likes: data.likes || 0,
+    alias: data.alias || "Anónimo",
+    createdAt: data.createdAt || null,
+  };
+};
+
 export default function CategoryPage() {
   const { category } = useParams();
 
@@ -35,10 +50,7 @@ export default function CategoryPage() {
     );
 
     const unsub = onSnapshot(q, (snap) => {
-      const data: Post[] = snap.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Post),
-      }));
+      const data: Post[] = snap.docs.map(mapPost);
 
       setPosts(data);
       setLoading(false);
@@ -87,31 +99,26 @@ export default function CategoryPage() {
 
           <p className="text-gray-500 mt-3 text-lg">
             {posts.length} publicación
-            {posts.length !== 1 ? "es" : ""}
-            {" "}en esta categoría
+            {posts.length !== 1 ? "es" : ""} en esta categoría
           </p>
         </div>
 
-        {/* POSTS */}
+        {/* EMPTY STATE */}
         {posts.length === 0 ? (
           <div className="bg-white border rounded-3xl p-12 text-center">
             <h2 className="text-2xl font-semibold mb-3">
               Sin publicaciones
             </h2>
-
             <p className="text-gray-500">
               Aún no existen publicaciones en esta categoría.
             </p>
           </div>
         ) : (
           <>
+            {/* POSTS */}
             <div className="space-y-6">
               {currentPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={() => {}}
-                />
+                <PostCard key={post.id} post={post} />
               ))}
             </div>
 

@@ -1,9 +1,9 @@
 export interface Post {
-  id: number;
+  id: string; // 🔥 IMPORTANTE
   title: string;
   content: string;
   category: string;
   likes: number;
   alias: string;
-  createdAt: string;
+  createdAt?: any;
 }

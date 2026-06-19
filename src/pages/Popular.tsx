@@ -30,10 +30,20 @@ export default function Popular() {
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
-      const data: Post[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Post),
-      }));
+  const data: Post[] = snapshot.docs.map((doc) => {
+    const d = doc.data() as any;
+
+    return {
+      id: doc.id,
+      title: d.title,
+      content: d.content,
+      category: d.category,
+      likes: d.likes,
+      alias: d.alias,
+      createdAt: d.createdAt,
+    };
+  });
+
 
       setPosts(data);
       setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
@@ -58,10 +68,19 @@ export default function Popular() {
 
     const snap = await getDocs(q);
 
-    const data: Post[] = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Post),
-    }));
+    const data: Post[] = snap.docs.map((doc) => {
+  const d = doc.data() as any;
+
+  return {
+    id: doc.id,
+    title: d.title,
+    content: d.content,
+    category: d.category,
+    likes: d.likes ?? 0,
+    alias: d.alias ?? "Anónimo",
+    createdAt: d.createdAt,
+  };
+});
 
     setPosts(data);
     setLastDoc(snap.docs[snap.docs.length - 1] || null);
@@ -110,10 +129,9 @@ export default function Popular() {
               ) : (
                 posts.map((post) => (
                   <PostCard
-                    key={post.id}
-                    post={post}
-                    onLike={() => {}}
-                  />
+  key={post.id}
+  post={post}
+/>
                 ))
               )}
             </div>
