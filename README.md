@@ -1,73 +1,137 @@
-# React + TypeScript + Vite
+# 🌿 Blog-Ecos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript)
+![Status](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow?style=for-the-badge)
+![License](https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge)
 
-Currently, two official plugins are available:
+## 📌 Descripción
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Blog-Ecos** es una aplicación web desarrollada con **React y TypeScript** enfocada en la creación, visualización y gestión de artículos tipo blog.
 
-## React Compiler
+El objetivo del proyecto es ofrecer una plataforma ligera, moderna y escalable donde los usuarios puedan explorar contenido organizado por categorías, con una interfaz limpia y responsiva.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🚀 Características
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 📝 Creación y visualización de artículos tipo blog
+- 🔍 Búsqueda de publicaciones
+- 🗂️ Organización por categorías o etiquetas
+- 💡 Interfaz moderna y responsiva
+- ⚡ Renderizado rápido con React
+- 🧠 Tipado seguro con TypeScript
+- 🌙 Diseño adaptable (modo claro/oscuro opcional)
+- 📱 Compatible con dispositivos móviles
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🛠️ Tecnologías utilizadas
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- React
+- TypeScript
+- React Router
+- Vite (o CRA si aplica)
+- CSS Modules / TailwindCSS (según implementación)
+- Axios (para consumo de API si aplica)
+
+---
+
+## 📂 Estructura del proyecto
+
+```text
+blog-ecos/
+│
+├── public/
+│   └── assets/
+│
+├── src/
+│   ├── components/
+│   │   ├── Navbar.tsx
+│   │   ├── Footer.tsx
+│   │   ├── PostCard.tsx
+│   │   └── SearchBar.tsx
+│   │
+│   ├── pages/
+│   │   ├── Home.tsx
+│   │   ├── Blog.tsx
+│   │   ├── PostDetail.tsx
+│   │   └── About.tsx
+│   │
+│   ├── routes/
+│   │   └── AppRouter.tsx
+│   │
+│   ├── services/
+│   │   └── api.ts
+│   │
+│   ├── styles/
+│   │
+│   ├── types/
+│   │   └── post.ts
+│   │
+│   ├── App.tsx
+│   └── main.tsx
+│
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ⚙️ Instalación y ejecución
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/tuusuario/blog-ecos.git
+cd blog-ecos
 ```
+
+### 2. Instalar dependencias
+
+```bash
+npm install
+```
+
+### 3. Ejecutar el proyecto
+
+```bash
+npm run dev
+```
+
+---
+
+## 🌐 Funcionalidades futuras
+
+- 🔐 Sistema de autenticación de usuarios
+- ✍️ Editor de artículos (Markdown)
+- 💬 Comentarios en publicaciones
+- ❤️ Sistema de likes
+- ☁️ Backend con base de datos (Node.js / Firebase)
+- 📊 Panel de administración
+- 🔔 Notificaciones en tiempo real
+
+---
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas.
+
+1. Haz un fork del proyecto
+2. Crea una rama nueva (`feature/nueva-funcion`)
+3. Realiza tus cambios
+4. Haz commit y push
+5. Abre un Pull Request
+
+---
+
+## 📜 Licencia
+
+Este proyecto está bajo la licencia MIT.
+
+---
+
+## 👨‍💻 Autor
+
+Desarrollado como proyecto educativo y base para un blog moderno con React + TypeScript.
