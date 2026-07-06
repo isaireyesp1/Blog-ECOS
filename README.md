@@ -84,7 +84,7 @@ Blog-ECOS/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tuusuario/blog-ecos.git
+git clone https://github.com/isairey/blog-ecos.git
 cd blog-ecos
 ```
 
