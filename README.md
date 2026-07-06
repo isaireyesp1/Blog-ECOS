@@ -40,7 +40,7 @@ El objetivo del proyecto es ofrecer una plataforma ligera, moderna y escalable d
 ## 📂 Estructura del proyecto
 
 ```text
-blog-ecos/
+Blog-ECOS/
 │
 ├── public/
 │   └── assets/
